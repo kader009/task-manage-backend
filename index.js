@@ -13,8 +13,7 @@ dotenv.config();
 app.use(cors());
 app.use(express.json());
 
-const uri =
-  `mongodb+srv://${process.env.MONGODB_NAME}:${process.env.MONGODB_PASSWORD}@cluster0.qqsbwzy.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
+const uri = process.env.MONGODB_URL;
 
 const client = new MongoClient(uri, {
   serverApi: {
