@@ -1,4 +1,4 @@
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const express = require('express');
 const cors = require('cors');
 const app = express();
@@ -26,9 +26,49 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     await client.connect();
-    console.log(
-      'Pinged your deployment. Server connected to MongoDB!'
-    );
+
+   // task Db
+    const TaskDb = client.db('taskDB');
+    const taskCollection = TaskDb.collection('taskCollection');
+
+    // userDb
+    const userDb = client.db('userDB');
+    const userCollection = userDb.collection('userCollection');
+
+    app.post('/tasks', async (req, res) => {
+      const taskData = req.body;
+      const result = await taskCollection.insertOne(taskData);
+      res.send(result);
+    });
+
+    app.get('/tasks', async (req, res) => {
+      const result = await taskCollection.find({}).toArray();
+      res.send(result);
+    });
+
+    app.get('/tasks/:id', async (req, res) => {
+      const id = req.params.id;
+      const result = await taskCollection.findOne({ _id: new ObjectId(id) });
+      res.send(result);
+    });
+
+    app.patch('/tasks/:id', async (req, res) => {
+      const id = req.params.id;
+      const updateTask = req.body;
+      const result = await taskCollection.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: updateTask }
+      );
+      res.send(result);
+    });
+
+    app.delete('/tasks/:id', async (req, res) => {
+      const id = req.params.id;
+      const result = await taskCollection.deleteOne({ _id: new ObjectId(id) });
+      res.send(result);
+    });
+
+    console.log('Pinged your deployment. Server connected to MongoDB!');
   } finally {
     // await client.close();
   }
