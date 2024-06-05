@@ -13,32 +13,32 @@ dotenv.config();
 app.use(cors());
 app.use(express.json());
 
-// tokencreate
-function TokenCreate(user) {
-  const token = jwt.sign(
-    {
-      email: user?.email,
-    },
-    'secret',
-    { expiresIn: '1h' }
-  );
-  return token;
-}
+// // tokencreate
+// function TokenCreate(user) {
+//   const token = jwt.sign(
+//     {
+//       email: user?.email,
+//     },
+//     'secret',
+//     { expiresIn: '1h' }
+//   );
+//   return token;
+// }
 
 // jwt verify function
-function verifyToken(req, res, next) {
-  var token = req.headers.authorization.split(' ')[1];
+// function verifyToken(req, res, next) {
+//   var token = req.headers.authorization.split(' ')[1];
 
-  console.log(token);
-  if (!token) return res.status(401).json({ message: 'No token provided' });
-  const verify = jwt.verify(token, 'secret');
+//   console.log(token);
+//   if (!token) return res.status(401).json({ message: 'No token provided' });
+//   const verify = jwt.verify(token, 'secret');
 
-  if (!verify?.email) {
-    return res.send('You are not authorized');
-  }
-  req.user = verify.email;
-  next();
-}
+//   if (!verify?.email) {
+//     return res.send('You are not authorized');
+//   }
+//   req.user = verify.email;
+//   next();
+// }
 
 const uri = process.env.MONGODB_URL;
 
@@ -62,7 +62,7 @@ async function run() {
     const userDb = client.db('userDB');
     const userCollection = userDb.collection('userCollection');
 
-    app.post('/tasks', verifyToken, async (req, res) => {
+    app.post('/tasks', async (req, res) => {
       const taskData = req.body;
       const result = await taskCollection.insertOne(taskData);
       res.send(result);
@@ -79,7 +79,7 @@ async function run() {
       res.send(result);
     });
 
-    app.patch('/tasks/:id', verifyToken, async (req, res) => {
+    app.patch('/tasks/:id', async (req, res) => {
       const id = req.params.id;
       const updateTask = req.body;
       const result = await taskCollection.updateOne(
@@ -94,7 +94,6 @@ async function run() {
       const result = await taskCollection.deleteOne({ _id: new ObjectId(id) });
       res.send(result);
     });
-    // task
 
     app.post('/users', async (req, res) => {
       const user = req.body;
