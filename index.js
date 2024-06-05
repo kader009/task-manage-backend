@@ -14,31 +14,31 @@ app.use(cors());
 app.use(express.json());
 
 // tokencreate
-// function TokenCreate(user) {
-//   const token = jwt.sign(
-//     {
-//       email: user?.email,
-//     },
-//     'secret',
-//     { expiresIn: '1h' }
-//   );
-//   return token;
-// }
+function TokenCreate(user) {
+  const token = jwt.sign(
+    {
+      email: user?.email,
+    },
+    'secret',
+    { expiresIn: '1h' }
+  );
+  return token;
+}
 
 // jwt verify function
-// function verifyToken(req, res, next) {
-//   var token = req.headers.authorization.split(' ')[1]; 
+function verifyToken(req, res, next) {
+  var token = req.headers.authorization.split(' ')[1];
 
-//   console.log(token);
-//   if (!token) return res.status(401).json({ message: 'No token provided' });
-//   const verify = jwt.verify(token, 'secret');
+  console.log(token);
+    if (!token) return res.status(401).json({ message: 'No token provided' });
+    const verify = jwt.verify(token, 'secret');
 
-//   if (!verify?.email) {
-//     return res.send('You are not authorized'); 
-//   }
-//   req.user = verify.email;
-//   next();
-// }
+    if (!verify?.email) {
+      return res.send('You are not authorized');
+    }
+    req.user = verify.email;
+    next();
+}
 
 const uri = process.env.MONGODB_URL;
 
@@ -62,7 +62,7 @@ async function run() {
     const userDb = client.db('userDB');
     const userCollection = userDb.collection('userCollection');
 
-    app.post('/tasks',  async (req, res) => {
+    app.post('/tasks',verifyToken,  async (req, res) => {
       const taskData = req.body;
       const result = await taskCollection.insertOne(taskData);
       res.send(result);
@@ -73,13 +73,13 @@ async function run() {
       res.send(result);
     });
 
-    app.get('/tasks/:id',  async (req, res) => {
+    app.get('/tasks/:id', async (req, res) => {
       const id = req.params.id;
       const result = await taskCollection.findOne({ _id: new ObjectId(id) });
       res.send(result);
     });
 
-    app.patch('/tasks/:id',  async (req, res) => {
+    app.patch('/tasks/:id', verifyToken, async (req, res) => {
       const id = req.params.id;
       const updateTask = req.body;
       const result = await taskCollection.updateOne(
@@ -89,27 +89,28 @@ async function run() {
       res.send(result);
     });
 
-    app.delete('/tasks/:id',  async (req, res) => {
+    app.delete('/tasks/:id', verifyToken, async (req, res) => {
       const id = req.params.id;
       const result = await taskCollection.deleteOne({ _id: new ObjectId(id) });
       res.send(result);
     });
 
-    app.post('/users',  async (req, res) => {
+    app.post('/users', verifyToken, async (req, res) => {
       const user = req.body;
-      // const token = TokenCreate(user);
+      const token = TokenCreate(user);
       const IsHaveUser = await userCollection.findOne({ email: user?.email });
 
       if (IsHaveUser?._id) {
-        return res.send({ status: 'success', message: 'login success',  });
+        return res.send({ status: 'success', message: 'login success', token});
       }
-      const result = await userCollection.insertOne(user);
-      res.send(result);
+      
+      await userCollection.insertOne(user);
+      return res.send({token});
     });
 
     app.get('/users/get/:id', async (req, res) => {
       const id = req.params.id;
-      console.log(id);
+      // console.log(id);
       const result = await userCollection.findOne({ _id: new ObjectId(id) });
       res.send(result);
     });
@@ -117,7 +118,18 @@ async function run() {
     app.get('/user/:email', async (req, res) => {
       const email = req.params.email;
       const result = await userCollection.findOne({ email });
-      res.send(result); 
+      res.send(result);
+    });
+
+    app.patch('/user/:email', async (req, res) => {
+      const email = req.params.email;
+      const updateData = req.body;
+      const result = await userCollection.updateOne(
+        { email },
+        { $set: updateData },
+        { upsert: true }
+      );
+      res.send(result);
     });
 
     console.log('Pinged your deployment. Server connected to MongoDB!');
