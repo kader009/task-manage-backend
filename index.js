@@ -30,14 +30,14 @@ function verifyToken(req, res, next) {
   var token = req.headers.authorization.split(' ')[1];
 
   console.log(token);
-    if (!token) return res.status(401).json({ message: 'No token provided' });
-    const verify = jwt.verify(token, 'secret');
+  if (!token) return res.status(401).json({ message: 'No token provided' });
+  const verify = jwt.verify(token, 'secret');
 
-    if (!verify?.email) {
-      return res.send('You are not authorized');
-    }
-    req.user = verify.email;
-    next();
+  if (!verify?.email) {
+    return res.send('You are not authorized');
+  }
+  req.user = verify.email;
+  next();
 }
 
 const uri = process.env.MONGODB_URL;
@@ -62,11 +62,11 @@ async function run() {
     const userDb = client.db('userDB');
     const userCollection = userDb.collection('userCollection');
 
-    app.post('/tasks',verifyToken,  async (req, res) => {
+    app.post('/tasks', verifyToken, async (req, res) => {
       const taskData = req.body;
       const result = await taskCollection.insertOne(taskData);
       res.send(result);
-    });
+    }); 
 
     app.get('/tasks', async (req, res) => {
       const result = await taskCollection.find({}).toArray();
@@ -101,11 +101,11 @@ async function run() {
       const IsHaveUser = await userCollection.findOne({ email: user?.email });
 
       if (IsHaveUser?._id) {
-        return res.send({ status: 'success', message: 'login success', token});
+        return res.send({ status: 'success', message: 'login success', token });
       }
-      
+
       await userCollection.insertOne(user);
-      return res.send({token});
+      return res.send({ token });
     });
 
     app.get('/users/get/:id', async (req, res) => {
