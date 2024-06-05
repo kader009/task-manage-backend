@@ -1,9 +1,9 @@
-const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb'); 
 const express = require('express');
 const cors = require('cors');
 const app = express();
 const jwt = require('jsonwebtoken');
-const dotenv = require('dotenv');
+const dotenv = require('dotenv'); 
 const port = 5000;
 
 // Load environment variables from .env file
@@ -92,10 +92,10 @@ async function run() {
     app.delete('/tasks/:id', verifyToken, async (req, res) => {
       const id = req.params.id;
       const result = await taskCollection.deleteOne({ _id: new ObjectId(id) });
-      res.send(result);
+      res.send(result);  
     });
 
-    app.post('/users', verifyToken, async (req, res) => {
+    app.post('/users',  async (req, res) => {
       const user = req.body;
       const token = TokenCreate(user);
       const IsHaveUser = await userCollection.findOne({ email: user?.email });
