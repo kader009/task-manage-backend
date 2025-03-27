@@ -1,4 +1,4 @@
-const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb'); 
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const express = require('express');
 const cors = require('cors');
 const app = express();
@@ -10,7 +10,15 @@ const port = 5000;
 dotenv.config();
 
 // middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      'http://localhost:5173',
+      'https://task-manage-backend-blush.vercel.app',
+    ],
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 // // tokencreate
@@ -116,9 +124,21 @@ async function run() {
     });
 
     app.get('/user/:email', async (req, res) => {
-      const email = req.params.email;
-      const result = await userCollection.findOne({ email });
-      res.send(result);
+      try {
+        const email = req.params.email.trim().toLowerCase(); // Normalize email
+        console.log('Searching for email:', email); // Debugging
+
+        // const user = await userCollection.findOne({ email: email });
+
+        // if (!user) {
+        //   return res.status(404).json({ message: "User not found" }); // Ensure response is JSON
+        // }
+
+        res.json(email);
+      } catch (error) {
+        console.error('Error fetching user:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+      }
     });
 
     app.patch('/user/:email', async (req, res) => {
