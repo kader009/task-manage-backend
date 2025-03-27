@@ -10,15 +10,7 @@ const port = 5000;
 dotenv.config();
 
 // middleware
-app.use(
-  cors({
-    origin: [
-      'http://localhost:5173',
-      'https://task-manage-backend-blush.vercel.app',
-    ],
-    credentials: true,
-  })
-);
+app.use(cors());
 app.use(express.json());
 
 // // tokencreate
